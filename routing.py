@@ -4,6 +4,7 @@ def forwarding(predecessor, source):
     """ 
     Compute a forwarding table from a predecessor list. 
     """
+
     table = {}
     for node in predecessor:
         current = node

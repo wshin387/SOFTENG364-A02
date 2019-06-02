@@ -1,17 +1,37 @@
 # -*- coding: utf-8 -*-
 from bitarray import bitarray
 
+
 def xor_at(a, b, offset=0):
     for k, bk in enumerate(b):
         index = offset + k
         a[index] = a[index] ^ bk
 
+
+def leading_zeros(bitarray):
+    count=0
+    for bit in bitarray:
+        if bit == False:
+            count+=1
+        else:
+            return count
+    return count
+
+
 def crc(d, g):
 	# We'd prefer not to modify the argument in xor_at
-    dcopy = d.copy()  
+    dcopy = d.copy()
 	#
 	# TODO: compute and return remainder "r"
 	#
+    offset = 0
+    while (len(dcopy)-offset >= len(g)):
+        xor_at(dcopy,g,offset)
+        offset = leading_zeros(dcopy)
+    #return remainder only
+    return dcopy[len(dcopy)-len(g)+1:]
+
+
 
 
 if __name__ == '__main__':
@@ -21,6 +41,7 @@ if __name__ == '__main__':
     d = bitarray('101110')          # data (without padding/shifting)
     p = bitarray('000')             # padding
     r = crc(d + p, g)               # error-correction bits
+    print(r)
     assert r == bitarray('011')     # known quotient
     assert crc(d + r, g) == p       # perform CRC check
     

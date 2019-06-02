@@ -1,0 +1,19 @@
+import checksum as cs
+
+
+#data = bytearray.fromhex("0100 F203 F4F5 F6F7")
+data = bytes.fromhex('b9 c9 d9')
+
+print(data)
+out = cs.internet_checksum(data)
+print(out)
+print(cs.internet_checksum(data))
+
+# #data = bytes.fromhex('45000073000040004011b861c0a80001c0a800c7')
+# #data = ['34','56','123','34','223','123','31']
+# data=bytes.fromhex('B9 C9 D9')
+# total = internet_checksum(data)
+# print(type(total))
+# print(total)
+# check = internet_checksum(data,total)
+# print(check)
