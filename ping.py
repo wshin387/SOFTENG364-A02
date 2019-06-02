@@ -140,6 +140,14 @@ def verbose_ping(host, timeout=2.0, count=4, log=print):
         try:
             #
 			# TODO: Open socket using "with" statement
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((host, ICMP_PORT_PLACEHOLDER))
+                s.sendall(b'Hello, world')
+                data = s.recv(1024)
+            print('Received', repr(data))
+
+
+
 			#
 			# TODO: set time-out duration (in seconds) on socket
 			#
@@ -193,6 +201,9 @@ def verbose_ping(host, timeout=2.0, count=4, log=print):
 	#    TODO: Compute & print statistics on round-trip times
 	#          i.e. Minimum, Maximum, Average
 	#
+    #print("Minimum RTT: ", max(round_trip_times))
+
+
 
 
 if __name__ == '__main__':
@@ -200,20 +211,20 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Test a host.')
     parser.add_argument('-w', '--timeout',
-                        metavar=None,  # TODO: Specify this argument
+                        metavar='timeout',
                         type=int,
-                        default=None,  # TODO: Specify this argument
+                        default=1000,
                         help='Timeout to wait for each reply (milliseconds).')
     parser.add_argument('-c', '--count',
                         metavar='num',
-                        type=None,  # TODO: Specify this argument
+                        type=int,
                         default=4,
-                        help=None)  # TODO: Specify this argument
+                        help="Number of echo requests to send")
     parser.add_argument('hosts',
                         metavar='host',
                         type=str,
                         nargs='+',
-                        help=None)  # TODO: Specify this argument
+                        help="URL or IPv4 address of target host(s)")
     args = parser.parse_args()
 
     for host in args.hosts:
