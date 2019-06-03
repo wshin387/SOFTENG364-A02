@@ -75,15 +75,14 @@ def ping(client_socket, dest_host, client_id, seq_no=0):
                     sequence_number=seq_no)
         return struct.pack(ICMP_STRUCT_FIELDS, *message)
 
-	# TODO: Please study these lines carefully,
+	# Please study these lines carefully,
 	#       noting that "icmp_pack()" (defined above) is called *twice*
     icmp_payload = struct.pack('d', this_instant())  # double-precision float
     icmp_packet_without_checksum = icmp_header(0) + icmp_payload
     checksum = internet_checksum(icmp_packet_without_checksum)
     icmp_packet = icmp_header(checksum) + icmp_payload
 
-    #
-    # TODO: Please note that that "icmp_packet" is the
+    # Please note that that "icmp_packet" is the
     #       payload that we'll send through for our INET raw socket
     #
 
@@ -91,7 +90,6 @@ def ping(client_socket, dest_host, client_id, seq_no=0):
     # unchanged if it is already in IPv4 address format.
     dest_host = socket.gethostbyname(dest_host)
     #.
-	# TODO:
 	# 1. Call sendto() on socket to send packet to destination host
     
     client_socket.sendto(icmp_packet,(dest_host,ICMP_PORT_PLACEHOLDER))
