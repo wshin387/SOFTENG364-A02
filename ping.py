@@ -162,19 +162,16 @@ def verbose_ping(host, timeout=2.0, count=4, log=print):
         log('Please check name and try again.')
         return
 
-    #
-	# TODO: Print suitable heading
+    # Print suitable heading
 	#       e.g. log("Contacting {} with {} bytes of data ".format(...))
     #
-    log("Contacting {} with {} bytes of data ".format(host,36))
+    log("Contacting {} with {} bytes of data ".format(host, 36))
 
     round_trip_times = []
 
     for seq_no in range(count):
         try:
-            #
-			# TODO: Open socket using "with" statement
-			#
+            # Open socket using "with" statement
             with socket.socket(family=socket.AF_INET,
                                type=socket.SOCK_RAW, # <=="raw socket"
                                proto=socket.getprotobyname('icmp')) as client_socket:
@@ -199,17 +196,15 @@ def verbose_ping(host, timeout=2.0, count=4, log=print):
 
             log("Reply from {:s} in {}ms: {}".format(host_ip, delay, response))
 
-			#
-            # TODO: Append "delay" to round_trip_times
-			#
+			#Append "delay" to round_trip_times
             round_trip_times.append(delay)
 
-		# TODO:
+
         # catch time-out error:
         #     handle time-out error i.e. log(...)
         except TimeoutError as error:
             log("Time out error has been caught after {}ms".format(round(timeout)))
-		# TODO:
+
         # catch check-sum error
         #     handle checksum-error i.e. log(...)
         except ChecksumError as error:
@@ -228,24 +223,19 @@ def verbose_ping(host, timeout=2.0, count=4, log=print):
 	# TODO: Print packet statistics header
 	# TODO: Compute & print packet statistics
 	#       i.e. "how many packets received and lost?"
-    received = len(round_trip_times)
-    lost_packets = count - received
+    received_count = len(round_trip_times)
+    lost_count = count - received_count
     log('Ping Statistics for {}:'.format(host_ip))
-    log('Packets: Sent = {}, Received = {}, Lost = {} ({}% loss)'.format(count,received,lost_packets,(count-received)/count*100))
+    log('Packets: Sent = {}, Received = {}, Lost = {} ({}% loss)'.format(count,received_count,lost_count,lost_count/count*100))
 
-    # TODO: "if received more than 0 packets":
-	#    TODO: Compute & print statistics on round-trip times
-	#          i.e. Minimum, Maximum, Average
-	#
-    if len(round_trip_times) > 0:
-        count=0
-        stats = [min(round_trip_times),max(round_trip_times),0]
-        for time in round_trip_times:
-            stats[2] += time
-        stats[2] = stats[2]//len(round_trip_times)
+    if received_count > 0:
+        stats = [min(round_trip_times), max(round_trip_times), 0]
+        for rtt in round_trip_times:
+            stats[2] += rtt
+        stats[2] = stats[2]//received_count
         log('Approximate round trip times')
         log('Minimum = {}ms, Maximum = {}ms, Average = {}ms'.format(stats[0],stats[1],stats[2]))
-    if len(round_trip_times) == 0:
+    if received_count == 0:
         log('No round trip time data')
         
     
