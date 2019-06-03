@@ -231,8 +231,8 @@ def verbose_ping(host, timeout=2.0, count=4, log=print):
     received = len(round_trip_times)
     lost_packets = count - received
     log('Ping Statistics for {}:'.format(host_ip))
-    log('Packets: Sent = {}, Received = {}, Lost = {} ({}% loss)'.format(count,received,lost_packets,(count-received)/received*100))
-    
+    log('Packets: Sent = {}, Received = {}, Lost = {} ({}% loss)'.format(count,received,lost_packets,(count-received)/count*100))
+
     # TODO: "if received more than 0 packets":
 	#    TODO: Compute & print statistics on round-trip times
 	#          i.e. Minimum, Maximum, Average
@@ -245,6 +245,8 @@ def verbose_ping(host, timeout=2.0, count=4, log=print):
         stats[2] = stats[2]//len(round_trip_times)
         log('Approximate round trip times')
         log('Minimum = {}ms, Maximum = {}ms, Average = {}ms'.format(stats[0],stats[1],stats[2]))
+    if len(round_trip_times) == 0:
+        log('No round trip time data')
         
     
     
