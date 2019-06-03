@@ -30,7 +30,9 @@ ICMP_STRUCT_FIELDS = "BBHHH"  # for use with struct.pack/unpack
 #
 # TODO: Define ChecksumError class
 #
-
+class ChecksumError(Exception):
+    """Raised when an error is detected through checksum"""
+    pass
 
 # Note that TimeoutError already exists in the Standard Library
 #class TimeoutError(PingError):
@@ -63,15 +65,15 @@ def ping(client_socket, dest_host, client_id, seq_no=0):
 
     def icmp_header(host_checksum):
         message = ICMPMessage(
-                    type=None,  # TODO: Use appropriate argument here
-                    code=None,  # TODO: Use appropriate argument here
-                    checksum=host_checksum,
-                    identifier=client_id,
-                    sequence_number=seq_no)
+            type=ECHO_REQUEST.type,  # TODO: Use appropriate argument here
+            code=ECHO_REQUEST.code,  # TODO: Use appropriate argument here
+            checksum=host_checksum,
+            identifier=client_id,
+            sequence_number=seq_no)
         return struct.pack(ICMP_STRUCT_FIELDS, *message)
 
-	# TODO: Please study these lines carefully,
-	#       noting that "icmp_pack()" (defined above) is called *twice*
+    # TODO: Please study these lines carefully,
+    #       noting that "icmp_pack()" (defined above) is called twice
     icmp_payload = struct.pack('d', this_instant())  # double-precision float
     icmp_packet_without_checksum = icmp_header(0) + icmp_payload
     checksum = internet_checksum(icmp_packet_without_checksum)
@@ -85,26 +87,47 @@ def ping(client_socket, dest_host, client_id, seq_no=0):
     # Note: socket.gethostbyname() returns the host name
     # unchanged if it is already in IPv4 address format.
     dest_host = socket.gethostbyname(dest_host)
+    # .
+    # TODO:
+    # 1. Call sendto() on socket to send packet to destination host
 
-    #
-	# TODO:
-	# 1. Call sendto() on socket to send packet to destination host
+    client_socket.sendto(icmp_packet, (dest_host, ICMP_PORT_PLACEHOLDER))
     # 2. Call recvfrom() on socket to receive datagram
-	#    (Note: A time-out exception might be raised here).
+    dgram = client_socket.recvfrom(BUFFER_SIZE)
+    #    (Note: A time-out exception might be raised here).
     # 2. Store this_instant() at which datagram was received
-	# 3. Extract ICMP packet from datagram i.e. drop IP header (20 bytes)
-	#     e.g. "icmp_packet = datagram[20:]"
-	# 4. Compute checksum on ICMP response packet (header and payload);
-	#     this will hopefully come to zero
-	# 5. Raise exception if checksum is nonzero
-	# 6. Extract ICMP response header from ICMP packet (8 bytes) and
-	#     unpack binary response data to obtain ICMPMessage "response"
-	#     that we'll return with the round-trip time (Step 9, below);
-	#     notice that this namedstruct is printed in the sample
-	#     command line output given in the assignment description.
-	#     e.g. "Reply from 151.101.0.223 in 5ms: ICMPMessage(type=0, code=0, checksum=48791, identifier=33540, sequence_number=0)"
-	# 7. Extract ICMP response payload (remaining bytes) and unpack
-	#     binary data to recover "time sent"
+    time_received = this_instant()
+    # 3. Extract ICMP packet from datagram i.e. drop IP header (20 bytes)
+    #     e.g. "icmp_packet = datagram[20:]"
+    icmp_packet = dgram[0][20:]
+    # 4. Compute checksum on ICMP response packet (header and payload);
+    #     this will hopefully come to zero
+    checksum = int.from_bytes(icmp_packet[3:1:-1], byteorder='big')
+    icmp_packet_copy = icmp_packet[:2] + icmp_packet[4:]
+    value = internet_checksum(icmp_packet_copy, checksum)
+    print(value)
+    if value != 0:
+        raise ChecksumError('Checksum is non-zero')
+
+    # 5. Raise exception if checksum is nonzero
+    # 6. Extract ICMP response header from ICMP packet (8 bytes) and
+    #     unpack binary response data to obtain ICMPMessage "response"
+    #     that we'll return with the round-trip time (Step 9, below);
+    #     notice that this namedstruct is printed in the sample
+    #     command line output given in the assignment description.
+    #     e.g. "Reply from 151.101.0.223 in 5ms: ICMPMessage(type=0, code=0, checksum=48791, identifier=33540, sequence_number=0)"
+    icmp_header = icmp_packet[:8]
+    icmp_type, icmp_code, icmp_checksum, icmp_packet_id, icmp_seq_no = struct.unpack(ICMP_STRUCT_FIELDS, icmp_header)
+    response = ICMPMessage(type=icmp_type, code=icmp_code, checksum=icmp_checksum, identifier=icmp_packet_id,
+                           sequence_number=icmp_seq_no)
+
+    # 7. Extract ICMP response payload (remaining bytes) and unpack
+    #     binary data to recover "time sent"
+    icmp_payload = icmp_packet[8:]
+    bytes_in_double = struct.calcsize('d')
+    time_sent = struct.unpack('d', icmp_payload[0:bytes_in_double])[0]
+    round_trip_time = time_received - time_sent
+    return round_trip_time * 1000, response
 	# 8. Compute round-trip time from "time sent"
 	# 9. Return "(round-trip time in milliseconds, response)"
 	#
@@ -152,17 +175,17 @@ def verbose_ping(host, timeout=2.0, count=4, log=print):
 			# TODO: set time-out duration (in seconds) on socket
 			#
 
-                # "The Identifier and Sequence Number can be used by the
-                # client to match the reply with the request that caused the
-                # reply. In practice, most Linux systems use a unique
-                # identifier for every ping process, and sequence number is
-                # an increasing number within that process. Windows uses a
-                # fixed identifier, which varies between Windows versions,
-                # and a sequence number that is only reset at boot time."
-                # -- https://en.wikipedia.org/wiki/Ping_(networking_utility)
-                client_id = os.getpid() & RIGHT_HEXTET
+            # "The Identifier and Sequence Number can be used by the
+            # client to match the reply with the request that caused the
+            # reply. In practice, most Linux systems use a unique
+            # identifier for every ping process, and sequence number is
+            # an increasing number within that process. Windows uses a
+            # fixed identifier, which varies between Windows versions,
+            # and a sequence number that is only reset at boot time."
+            # -- https://en.wikipedia.org/wiki/Ping_(networking_utility)
+            client_id = os.getpid() & RIGHT_HEXTET
 
-                delay, response = ping(client_socket,
+            delay, response = ping(client_socket,
                                    host,
                                    client_id=client_id,
                                    seq_no=seq_no)
