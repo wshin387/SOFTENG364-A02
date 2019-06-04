@@ -33,7 +33,7 @@ MILLISEC_PER_SEC = 1000
 # TODO: Define ChecksumError class
 #
 class ChecksumError(Exception):
-    # Raised when checksum values do not match
+    # Error from non-matching checksum values
     pass
 
 # Note that TimeoutError already exists in the Standard Library
@@ -55,7 +55,7 @@ ECHO_REPLY = ICMPTypeCode(0, 0)
 
 
 def this_instant():
-	# TODO: Decide which of the following values to return here:
+	# Decide which of the following values to return here:
 	# time.clock(), time.perf_counter(), time.process_time()
     return time.perf_counter()
     
