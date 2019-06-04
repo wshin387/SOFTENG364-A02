@@ -19,7 +19,7 @@ def dijkstra_generalized(graph, source, weight='weight',
                          infinity=None,
                          plus=None,
                          less=None,
-                         min=None):
+                         min=min):
     """
     Least-cost or widest paths via Dijkstra's algorithm.
     """
@@ -45,14 +45,16 @@ def dijkstra_generalized(graph, source, weight='weight',
     # Loop
     while NPrime != N:
         candidates = {w: D[w] for w in N if w not in NPrime}
-    w, Dw = min(candidates.items(), key=lambda item: item[1])
-    NPrime.add(w)
-    for v in graph[w]:
-        if v not in NPrime:
-            DvNew = D[w] + c(w, v)
-            if DvNew < D[v]:
-                D[v] = DvNew
-                pre[v] = [w]
-
+        w, Dw = min(candidates.items(), key=lambda item: item[1])
+        NPrime.add(w)
+        for v in graph[w]:
+            if v not in NPrime:
+                DvNew = D[w] + c(w, v)
+                if DvNew < D[v]:
+                    D[v] = DvNew
+                    pre[v] = [w]
 
     return D, pre
+
+
+
