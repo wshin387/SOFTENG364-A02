@@ -10,8 +10,8 @@ def forwarding(predecessor, source):
         current = node
         if current != source:
             while predecessor[current][0] != source:
-                node = predecessor[current][0]
-        table[node] = (source, current)
+                current = predecessor[current][0]
+            table[node] = (source, current)
     return table
 
 
