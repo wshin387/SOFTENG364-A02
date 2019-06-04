@@ -7,8 +7,7 @@ def hextet_complement(x):
     :param x: int
     :return: the hextet complement of x
     """
-    mask = (1 << x.bit_length()) - 1
-    return int(hex(~x & mask), base=16)
+    return ~x & 0xffff
 
 
 def internet_checksum(data, total=0x0):
@@ -27,7 +26,7 @@ def internet_checksum(data, total=0x0):
             total= (carry & 0xFFFF) + (carry >> 16)
 
         else:
-            wrap = data[i] + (data[i+1] << 8)
+            wrap = (data[i] << 8) + data[i+1]
             carry = wrap + total
             total = (carry & 0xFFFF) + (carry >> 16)
     return hextet_complement(total)

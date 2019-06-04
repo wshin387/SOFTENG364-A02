@@ -3,6 +3,7 @@ import checksum as cs
 
 #data = bytearray.fromhex("0100 F203 F4F5 F6F7")
 data = bytes.fromhex('b9 c9 d9')
+#data = bytes.fromhex()
 
 print(data)
 out = cs.internet_checksum(data)
@@ -17,3 +18,97 @@ print(cs.internet_checksum(data))
 # print(total)
 # check = internet_checksum(data,total)
 # print(check)
+
+# FOR TESTING
+
+
+print("From https://en.wikipedia.org/wiki/IPv4_header_checksum:")
+test1 = b''
+arr = [0x4500, 0x0073, 0x0000, 0x4000, 0x4011, 0xc0a8, 0x0001, 0xc0a8, 0x00c7]
+for x in arr:
+    test1 += x.to_bytes(2, byteorder='big')  # creating byte array
+result = cs.internet_checksum(test1)
+print("Hex is: " + hex(result))
+print("Expected: 47201, Result: " + str(result))
+assert 47201 == result  # known checksum
+
+print()
+print("From https://tools.ietf.org/html/rfc1071")
+# For even
+test1 = b''
+arr = [0x0001, 0xf203, 0xf4f5, 0xf6f7]
+for x in arr:
+    test1 += x.to_bytes(2, byteorder='big')  # creating byte array
+result = cs.internet_checksum(test1)
+print("Hex is: " + hex(result))
+print("Expected: 8717, Result: " + str(result))
+assert 8717 == result  # known checksum
+
+# =============================================================================
+#     print()
+#
+#     print("For bit ordering")
+#     #Probably not important lol
+#     test1 = b''
+#     arr = [0x0001, 0xf203, 0xf4f5, 0xf6f7]
+#     for x in arr:
+#         test1+=x.to_bytes(2,byteorder='little') #creating byte array
+#     result = internet_checksum(test1)
+#     print("Expected: 0x220d, Result: " + result )
+#     assert '0x220d' == result    # known checksum
+# =============================================================================
+
+print("From https://www.youtube.com/watch?v=EmUuFRMJbss&t=171s")
+# For odd
+test1 = b''
+arr = [0x00fe, 0xc523, 0xfda1, 0xd68a, 0xaf02]
+for x in arr:
+    test1 += x.to_bytes(2, byteorder='big')  # creating byte array
+result = cs.internet_checksum(test1)
+print("Hex is: " + hex(result))
+print("Expected: 46766, Result: " + str(result))
+assert 46766 == result  # known checksum
+
+print()
+print("Folding Example: Multiple 32bit to 16bit ")
+# For folding, makes sure it folds back into 16 bit
+test1 = b''
+arr = [0x0001f203, 0xf4f5f6f7]
+for x in arr:
+    test1 += x.to_bytes(8, byteorder='big')  # creating byte array
+result = cs.internet_checksum(test1)
+print("Hex is: " + hex(result))
+print("Expected: 8717, Result: " + str(result))
+assert 8717 == result  # known checksum
+
+print()
+print("Folding Example: Single 32bit to 16bit - no carry on either ")
+# From https://www.netfor2.com/checksum.html
+# For folding, makes sure it folds back into 16 bit
+test1 = b''
+arr = [0x0002deef]
+for x in arr:
+    test1 += x.to_bytes(8, byteorder='big')  # creating byte array
+result = cs.internet_checksum(test1)
+print("Hex is: " + hex(result))
+print("Expected: 8462, Result: " + str(result))
+assert 8462 == result  # known checksum
+
+print()
+print("When one value has a carry and the other doesn't")
+# From https://www.netfor2.com/checksum.html
+# For folding, makes sure it folds back into 16 bit
+
+# arr2 = [0xff01, 0xdef1]
+print(bytearray.fromhex('ff01def1'))
+arr = bytearray.fromhex('ff01def1')
+# =============================================================================
+#     test1 = b''
+#     for x in arr2:
+#         test1+=x.to_bytes(2,byteorder='big') #creating byte array
+#     print(test1)
+# =============================================================================
+result = cs.internet_checksum(arr)
+print("Hex is: " + hex(result))
+print("Expected: 8716, Result: " + str(result))
+assert 8716 == result  # known checksum
