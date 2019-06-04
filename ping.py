@@ -24,7 +24,7 @@ BUFFER_SIZE = 2 << 5
 # port number, just to be safe.
 ICMP_PORT_PLACEHOLDER = 1
 ICMP_HEADER_LENGTH = 28
-ICMP_STRUCT_FIELDS = "BBHHH"  # for use with struct.pack/unpack
+ICMP_STRUCT_FIELDS = "!BBHHH"  # for use with struct.pack/unpack
 
 MILLISEC_PER_SEC = 1000
 
@@ -109,7 +109,7 @@ def ping(client_socket, dest_host, client_id, seq_no=0):
 	#     this will hopefully come to zero
     
     # get checksum fields
-    checksum = int.from_bytes(icmp_packet[3:1:-1], byteorder='big')
+    checksum = int.from_bytes(icmp_packet[2:4], byteorder='big')
     # zero out checksum fields (third and fourth byte) on response
     icmp_packet_copy = icmp_packet[:2] + icmp_packet[4:]
     # verify checksum

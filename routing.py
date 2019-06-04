@@ -11,7 +11,7 @@ def forwarding(predecessor, source):
         if current != source:
             while predecessor[current][0] != source:
                 node = predecessor[current][0]
-            table[node] = (source, current)
+        table[node] = (source, current)
     return table
 
 
